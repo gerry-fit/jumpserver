@@ -2438,6 +2438,14 @@ msgid "Welcome back, please enter username and password to login"
 msgstr ""
 "おかえりなさい、ログインするためにユーザー名とパスワードを入力してください"
 
+#: authentication/templates/authentication/login.html:229
+msgid "Normal Login"
+msgstr "通常のログイン"
+
+#：authentication/templates/authentication/login.html:233
+msgid "USBKey Login"
+msgstr "「USBKeyログイン」"
+
 #: authentication/templates/authentication/login.html:256
 #: users/templates/users/forgot_password.html:16
 #: users/templates/users/forgot_password.html:17
@@ -7018,3 +7026,14 @@ msgstr "究極のエディション"
 #: xpack/plugins/license/models.py:77
 msgid "Community edition"
 msgstr "コミュニティ版"
+
+#: authentication/errors/const.py:70
+msgid "Certificate PIN code error."
+msgstr "証明書PINコード入力エラー"
+
+#: authentication/errors/const.py:71
+msgid ""
+"The PIN code has been entered incorrectly for 10 consecutive times, "
+"and the UsbKey has been locked. "
+"Please contact the administrator to unlock it."
+msgstr "PINコードは連続して10回エラーを入力し、UsbKeyはロックされているので、管理者に連絡してロックを解除してください。"

@@ -5,6 +5,7 @@ reason_password_failed = 'password_failed'
 reason_password_decrypt_failed = 'password_decrypt_failed'
 reason_mfa_failed = 'mfa_failed'
 reason_mfa_unset = 'mfa_unset'
+reason_ukey_sign_fail = 'subkey_sign_fail'
 reason_user_not_exist = 'user_not_exist'
 reason_password_expired = 'password_expired'
 reason_user_invalid = 'user_invalid'
@@ -65,3 +66,10 @@ mfa_unset_msg = _("MFA not set, please set it first")
 login_confirm_required_msg = _("Login confirm required")
 login_confirm_wait_msg = _("Wait login confirm ticket for accept")
 login_confirm_error_msg = _("Login confirm ticket was {}")
+
+usbkey_pin_error_msg = _("Certificate PIN code error.")
+usbkey_locked_msg = _(
+    "The PIN code has been entered incorrectly for 10 consecutive times, "
+    "and the UsbKey has been locked. "
+    "Please contact the administrator to unlock it."
+)

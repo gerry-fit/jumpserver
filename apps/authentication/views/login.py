@@ -21,7 +21,7 @@ from django.conf import settings
 from django.urls import reverse_lazy
 from django.contrib.auth import BACKEND_SESSION_KEY
 
-from common.utils import FlashMessageUtil, static_or_direct
+from common.utils import FlashMessageUtil, static_or_direct, get_logger
 from users.utils import (
     redirect_user_first_login_or_index
 )
@@ -34,6 +34,8 @@ __all__ = [
     'UserLoginGuardView', 'UserLoginWaitConfirmView',
 ]
 
+logger = get_logger(__name__)
+
 
 class UserLoginContextMixin:
     get_user_mfa_context: Callable
@@ -41,6 +43,13 @@ class UserLoginContextMixin:
 
     def get_support_auth_methods(self):
         auth_methods = [
+            # {
+            #     'name': 'UsbKey',
+            #     'enabled': True,
+            #     'url': reverse('authentication:usbkey:login'),
+            #     'logo': static('img/login_oidc_logo.png'),
+            #     'auto_redirect': False  # 是否支持自动重定向
+            # },
             {
                 'name': 'OpenID',
                 'enabled': settings.AUTH_OPENID,
@@ -209,6 +218,7 @@ class UserLoginView(mixins.AuthMixin, UserLoginContextMixin, FormView):
         try:
             self.check_user_auth(form.cleaned_data)
         except errors.AuthFailedError as e:
+            logger.error('AuthFailedError: {}'.format(e))
             form.add_error(None, e.msg)
             self.set_login_failed_mark()
             form_cls = get_user_login_form_cls(captcha=True)

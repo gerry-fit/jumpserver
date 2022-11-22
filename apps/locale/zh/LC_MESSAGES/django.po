@@ -2404,6 +2404,14 @@ msgstr "取消"
 msgid "Welcome back, please enter username and password to login"
 msgstr "欢迎回来，请输入用户名和密码登录"
 
+#: authentication/templates/authentication/login.html:229
+msgid "Normal Login"
+msgstr "普通登录"
+
+#: authentication/templates/authentication/login.html:233
+msgid "USBKey Login"
+msgstr "USBKey登录"
+
 #: authentication/templates/authentication/login.html:256
 #: users/templates/users/forgot_password.html:16
 #: users/templates/users/forgot_password.html:17
@@ -6916,3 +6924,14 @@ msgstr "旗舰版"
 #: xpack/plugins/license/models.py:77
 msgid "Community edition"
 msgstr "社区版"
+
+#: authentication/errors/const.py:70
+msgid "Certificate PIN code error."
+msgstr "证书PIN码输入错误"
+
+#: authentication/errors/const.py:71
+msgid ""
+"The PIN code has been entered incorrectly for 10 consecutive times, "
+"and the UsbKey has been locked. "
+"Please contact the administrator to unlock it."
+msgstr "PIN码连续输错10次，UsbKey已被锁定，请联系管理员解锁。"

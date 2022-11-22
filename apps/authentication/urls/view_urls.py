@@ -61,6 +61,7 @@ urlpatterns = [
     path('openid/', include(('authentication.backends.oidc.urls', 'authentication'), namespace='openid')),
     path('saml2/', include(('authentication.backends.saml2.urls', 'authentication'), namespace='saml2')),
     path('oauth2/', include(('authentication.backends.oauth2.urls', 'authentication'), namespace='oauth2')),
+    path('usbkey/', include(('authentication.backends.usbkey.urls', 'authentication'), namespace='usbkey')),
 
     path('captcha/', include('captcha.urls')),
 ]

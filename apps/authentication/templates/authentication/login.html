@@ -15,6 +15,7 @@
     <link href="{% static 'css/login-style.css' %}" rel="stylesheet">
     <link href="{% static 'css/jumpserver.css' %}" rel="stylesheet">
     <script src="{% static "js/jumpserver.js" %}?_=9"></script>
+    <script src="{% static "js/plugins/gm/gm-auth-plugin.js" %}?_=9"></script>
 
     <style>
         .login-content {
@@ -96,6 +97,11 @@
 
         .jms-title {
             padding: 60px 10px 10px;
+        }
+
+        .custom-login {
+            margin-top: -20px;
+            text-align: left;
         }
 
         .more-login-items {
@@ -211,7 +217,7 @@
             <div class="contact-form col-md-10 col-md-offset-1">
                 <form id="login-form" action="" method="post" role="form" novalidate="novalidate">
                     {% csrf_token %}
-                    <div style="line-height: 17px;margin-bottom: 20px;color: #999999;">
+                    <div id="tip" style="line-height: 17px;margin-bottom: 20px;color: #999999;">
                     {% if form.non_field_errors %}
                         <p class="help-block red-fonts">
                             {{ form.non_field_errors.as_text }}
@@ -223,7 +229,21 @@
                     {% endif %}
                     </div>
 
-                    {% bootstrap_field form.username show_label=False %}
+<!--                    <input type="radio" name="loginType" value="0" checked onclick="initGM(0)" />-->
+<!--                    <label>-->
+<!--                        {% trans 'Normal Login' %}-->
+<!--                    </label>-->
+<!--                    <input type="radio" name="loginType" value="1" onclick="initGM(1)"/>-->
+<!--                    <label>-->
+<!--                        {% trans 'USBKey Login' %}-->
+<!--                    </label>-->
+
+                    <br />
+
+                    <div id="username">
+                        {% bootstrap_field form.username show_label=False %}
+                    </div>
+
                     <div class="form-group {% if form.password.errors %} has-error {% endif %}">
                         <input type="password" class="form-control" id="password" placeholder="{% trans 'Password' %}" required>
                         <input id="password-hidden" type="text" style="display:none" name="{{ form.password.html_name }}">
@@ -233,6 +253,12 @@
                         </p>
                         {% endif %}
                     </div>
+                    <div class="form-group" style="display: none">
+                        <input type="text" class="form-control" id="rand" name="rand">
+                        <input type="text" class="form-control" id="sign" name="sign">
+                        <input type="text" class="form-control" id="ecsburl" name="ecsburl">
+                    </div>
+
                     {% if form.challenge %}
                         {% bootstrap_field form.challenge show_label=False %}
                     {% elif form.mfa_type %}
@@ -265,6 +291,10 @@
                         </button>
                     </div>
 
+                    <div id="loginType" class="custom-login">
+                        <a id="loginTypeA" href="javascript:void(0)" onclick="initGM(1)" style="text-decoration: none">证书登录</a>
+                    </div>
+
                     <div class="more-login">
                         {% if auth_methods %}
                             <div class="more-methods-title {{ current_lang.code }}">
@@ -293,12 +323,99 @@
 <script type="text/javascript" src="/static/js/plugins/cryptojs/crypto-js.min.js"></script>
 <script type="text/javascript" src="/static/js/plugins/buffer/buffer.min.js"></script>
 <script>
+    function initGM(loginType) {
+        if (loginType === 0) {
+            document.getElementById("username").innerHTML = `{% bootstrap_field form.username show_label=False %}`;
+            document.getElementById("loginType").innerHTML = `<a id="loginTypeA" href="javascript:void(0)" onclick="initGM(1)" style="text-decoration: none">证书登录</a>`;
+        }else {
+            document.getElementById("loginType").innerHTML = `<a id="loginTypeA" href="javascript:void(0)" onclick="initGM(0)" style="text-decoration: none">账号密码登录</a>`;
+
+            var content = `<select id="username" name="username" class="form-control">`
+            GmAuthPlugin.isPluginInstalled().then(function (res) {
+                console.log('插件检测结果：', res);
+                if (res.code !== 0) {
+                    setTimeout(initGM(loginType), 1000);
+                    return
+                }
+                //1--枚举本地密钥；2--枚举ukey密钥；3--枚举所有
+                GmAuthPlugin.enumKeys(2).then(function (userData) {
+                    console.log('枚举key成功：', userData);
+                    if (res.code !== 0) {
+                        setTimeout(initGM(loginType), 1000);
+                        return
+                    }
+                    var userList = userData.data;//Challenge：挑战值（base64编码）
+                    for (let i = 0; i < userList.length; i++) {
+                        let username = userList[i].cn
+                        if (username.indexOf("@") !== -1) {
+                            username = username.split("@")[0]
+                        }
+                        content += `<option value="` + username + `">` + username + `</option>`;
+                    }
+                    content += `</select>`
+                    document.getElementById("username").innerHTML = content;
+                }).catch(function (err) {
+                  console.log('枚举用户报错：', err);
+                  document.getElementById("tip").innerHTML = `<p class="help-block red-fonts">` + err + `</p>`;
+                });
+            }).catch(function (err) {
+                  console.log('插件检测报错：', err);
+                  document.getElementById("tip").innerHTML = `<p class="help-block red-fonts">` + err + `</p>`;
+
+            });
+        }
+    }
     function doLogin() {
+        let loginType = $('#loginTypeA').text();
+        console.log(loginType);
         //公钥加密
+        var username = ''
+        if (loginType === '证书登录') {
+            username = $('#username').val();
+        }else {
+            username = $('#username option:selected').val(); //账号
+        }
         var password = $('#password').val(); //明文密码
         var passwordEncrypted = encryptPassword(password)
         $('#password-hidden').val(passwordEncrypted); //返回给密码输入input
-        $('#login-form').submit(); //post提交
+        if (loginType === '证书登录') {
+            $('#login-form').submit(); //post提交
+        }else {
+            $.ajax({
+            url: "{% url 'authentication:usbkey:challenge' %}",
+            type: "get",
+            contentType: "application/json;charset=UTF-8",
+            dataType: "json",
+            success: function (response) {
+                let b64Challenge = response.b64Challenge
+                let url = response.url
+                GmAuthPlugin.GMLoginSignData(username + '@PIM', password, b64Challenge, url).then(function (signRes) {
+                    console.log('获取签名值成功：', signRes);
+                    if (signRes.code !== 0) {
+                        console.log("获取签名值异常", signRes);
+                        errs1 = [-93, -4520, -4501]
+                        errs2 = [-4512, -4599, -4600]
+                        var msg = signRes.msg
+                        if (arrs1.indexOf(signRes.code) === 0) {
+                            msg = '证书PIN码输入错误';
+                        }else if (arrs2.indexOf(signRes.code) === 0) {
+                            msg = 'PIN码连续输错10次，UsbKey已被锁定，请联系管理员解锁';
+                        }
+                        document.getElementById("tip").innerHTML = `<p class="help-block red-fonts">` + msg + `</p>`
+                    }else {
+                        debugger
+                        $('#ecsburl').val(url);
+                        $('#rand').val(response.rand);
+                        $('#sign').val(signRes.data);
+
+                        $('#login-form').submit(); //post提交
+                    }
+                })
+
+            }
+
+        })
+        }
     }
 </script>
 </html>

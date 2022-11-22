@@ -3,10 +3,12 @@
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+from common.utils import get_logger
 from users.utils import LoginBlockUtil, MFABlockUtils, LoginIpBlockUtil
 from ..signals import post_auth_failed
 from . import const
 
+logger = get_logger(__name__)
 
 class AuthFailedNeedLogMixin:
     username = ''
@@ -67,6 +69,7 @@ class CredentialError(
     BlockGlobalIpLoginError, AuthFailedError
 ):
     def __init__(self, error, username, ip, request):
+        logger.error(error)
         util = LoginBlockUtil(username, ip)
         times_remainder = util.get_remainder_times()
         block_time = settings.SECURITY_LOGIN_LIMIT_TIME

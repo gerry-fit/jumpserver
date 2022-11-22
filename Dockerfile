@@ -94,6 +94,14 @@ COPY --from=stage-build /opt/jumpserver/release/jumpserver /opt/jumpserver
 RUN echo > /opt/jumpserver/config.yml \
     && rm -rf /tmp/build
 
+RUN set -ex \
+    && sed -i 's@http://.*.debian.org@http://mirrors.ustc.edu.cn@g' /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends wget ca-certificates \
+    && mkdir -p /opt/jumpserver/apps/xpack/plugins/license/bin \
+    && wget -O /opt/jumpserver/apps/xpack/plugins/license/bin/fit2license https://fit2cloud-support.oss-cn-beijing.aliyuncs.com/xpack-license/validator_linux_${TARGETARCH} \
+    && chmod 755 /opt/jumpserver/apps/xpack/plugins/license/bin/fit2license
+
 WORKDIR /opt/jumpserver
 VOLUME /opt/jumpserver/data
 VOLUME /opt/jumpserver/logs
