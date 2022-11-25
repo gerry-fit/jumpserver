@@ -279,6 +279,20 @@ class Config(dict):
         'DINGTALK_APPKEY': '',
         'DINGTALK_APPSECRET': '',
 
+        # usbkey
+        'UKEY_ECSB_DOMAIN': 'http://example:8080',
+        "UKEY_API_ID": "crc.ldap.certauth.ldapcertauthinterface2",
+        "UKEY_API_VERSION": "1.0",
+        "UKEY_APP_SUB_ID": "0000005U0002",
+        "UKEY_APP_TOKEN": "32076b2f97e94051941840a4e72d6eeb",
+        "UKEY_ENV": "test",
+        "UKEY_PARTNER_ID": "00000000",
+        "UKEY_SIGN": "NO_SIGN",
+        "UKEY_SYS_ID": "0000005U",
+        "UKEY_USER_TOKEN": "",
+        "UKEY_CLIENT_ID": "aolian",
+        "UKEY_APPKEY": "a4f33f7d7e2b43128c28760cee4ecee6",
+
         # 飞书
         'AUTH_FEISHU': False,
         'FEISHU_APP_ID': '',

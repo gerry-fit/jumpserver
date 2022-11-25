@@ -171,13 +171,14 @@ AUTH_BACKEND_FEISHU = 'authentication.backends.sso.FeiShuAuthentication'
 AUTH_BACKEND_AUTH_TOKEN = 'authentication.backends.sso.AuthorizationTokenAuthentication'
 AUTH_BACKEND_SAML2 = 'authentication.backends.saml2.SAML2Backend'
 AUTH_BACKEND_TEMP_TOKEN = 'authentication.backends.token.TempTokenAuthBackend'
+AUTH_BACKEND_USBKEY = 'authentication.backends.usbkey.UsbKeyBackend'
 
 
 AUTHENTICATION_BACKENDS = [
     # 只做权限校验
     RBAC_BACKEND,
     # 密码形式
-    AUTH_BACKEND_MODEL,  AUTH_BACKEND_PUBKEY, AUTH_BACKEND_LDAP, AUTH_BACKEND_RADIUS,
+    AUTH_BACKEND_MODEL,  AUTH_BACKEND_PUBKEY, AUTH_BACKEND_LDAP, AUTH_BACKEND_RADIUS, AUTH_BACKEND_USBKEY,
     # 跳转形式
     AUTH_BACKEND_CAS, AUTH_BACKEND_OIDC_PASSWORD, AUTH_BACKEND_OIDC_CODE, AUTH_BACKEND_SAML2,
     # 扫码模式
