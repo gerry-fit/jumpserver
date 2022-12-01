@@ -40,36 +40,46 @@ class UsbKeyChallenge(View):
         logger.info('unbase64_ssdp: {}'.format(ssdp))
         return base64.b64encode(ssdp.encode('utf-8')).decode('utf-8')
 
-    def getChallenge(self):
-        ssdp = self.getSsdp()
-        url = CONFIG.UKEY_ECSB_DOMAIN + '/ecsb/gw/sys/rf?ssdp=' + ssdp
-        rand = "".join(str(uuid.uuid4()).split("-"))
-        params = {
-            "header": {
-            },
-            "body": {},
-            "param": {
-                "interfacePath": "/sign_api/getCodeData",
-                "urlParam": f"rand={rand}&alg=2"
-            },
-            "httpMethod": "GET"
-        }
-        header = {
-            "clientId": CONFIG.UKEY_CLIENT_ID,
-            "timestamp": str(int(time.time() * 1000))
-        }
-        logger.info('getChallenge params: {}'.format(params))
-        response = requests.post(url, json=params, headers=header)
-        data = response.json()
-        b64data = data.get("data")
-        ret = json.loads(base64.b64decode(b64data.encode('utf-8')))
-        rand = ret.get("rand")
-        b64Challenge = base64.b64encode(rand.encode('utf-8')).decode('utf-8')
-        return {
-            'b64Challenge': b64Challenge,
-            'rand': rand,
-            'url': url
-        }
-
     def get(self, request):
-        return HttpResponse(json.dumps(self.getChallenge()))
+        try:
+            ssdp = self.getSsdp()
+            url = CONFIG.UKEY_ECSB_DOMAIN + '/ecsb/gw/sys/rf?ssdp=' + ssdp
+            rand = "".join(str(uuid.uuid4()).split("-"))
+            params = {
+                "header": {
+                },
+                "body": {},
+                "param": {
+                    "interfacePath": "/sign_api/getCodeData",
+                    "urlParam": f"rand={rand}&alg=2"
+                },
+                "httpMethod": "GET"
+            }
+            header = {
+                "clientId": CONFIG.UKEY_CLIENT_ID,
+                "timestamp": str(int(time.time() * 1000))
+            }
+            logger.info('url: {}, getChallenge params: {}'.format(url, params))
+            response = requests.post(url, json=params, headers=header)
+            data = response.json()
+
+            b64data = data.get("data")
+            if b64data is None:
+                return HttpResponse(content=json.dumps({
+                    'code': 500,
+                    'msg': data.get("comments")
+                }))
+            ret = json.loads(base64.b64decode(b64data.encode('utf-8')))
+            rand = ret.get("rand")
+            b64Challenge = base64.b64encode(rand.encode('utf-8')).decode('utf-8')
+            return HttpResponse(content=json.dumps({
+                'code': 200,
+                'b64Challenge': b64Challenge,
+                'rand': rand,
+                'url': url
+            }))
+        except Exception as e:
+            return HttpResponse(content=json.dumps({
+                'code': 500,
+                'msg': e
+            }))

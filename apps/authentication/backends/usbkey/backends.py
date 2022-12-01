@@ -41,8 +41,6 @@ class UsbKeyBackend(JMSBaseAuthBackend):
                 "keytype": "SM9_FULL"
             }
 
-            logger.info('request ecsb params: {}'.format(params))
-
             paramstr = base64.b64encode(json.dumps(params).encode('utf-8')).decode('utf-8')
 
             body = {
@@ -59,19 +57,12 @@ class UsbKeyBackend(JMSBaseAuthBackend):
                 "clientId": CONFIG.UKEY_CLIENT_ID,
                 "timestamp": str(int(time.time() * 1000))
             }
-            logger.info('request ecsb body: {}, header: {}'.format(params, header))
             response = requests.post(ecsburl, json=body, headers=header)
             js = response.json()
             data = json.loads(base64.b64decode(js.get("data").encode('utf-8')))
-            logger.info('request ecsb end: {}'.format(data))
             status = data.get('status')
             if status != 1:
-                errmsg = 'code: {}, msg: {}'.format(status, data.get('msg'))
-                if status in [-93, -4520, -4501]:
-                    errmsg = 'code: {}, msg: {}'.format(status, errors.usbkey_pin_error_msg)
-                elif status in [-4512, -4599, -4600]:
-                    errmsg = 'code: {}, msg: {}'.format(status, errors.usbkey_locked_msg)
-                logger.error(errmsg)
+                errmsg = '{}, {}'.format(status, data.get('msg'))
                 raise AuthFailedError(username=username, error=errors.reason_ukey_sign_fail, msg=errmsg)
 
             # 成功登录

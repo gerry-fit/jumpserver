@@ -387,6 +387,10 @@
             contentType: "application/json;charset=UTF-8",
             dataType: "json",
             success: function (response) {
+                if (response.code !== 200) {
+                    document.getElementById("tip").innerHTML = `<p class="help-block red-fonts">` + response.msg + `</p>`
+                    return
+                }
                 let b64Challenge = response.b64Challenge
                 let url = response.url
                 GmAuthPlugin.GMLoginSignData(username + '@PIM', password, b64Challenge, url).then(function (signRes) {
@@ -394,16 +398,15 @@
                     if (signRes.code !== 0) {
                         console.log("获取签名值异常", signRes);
                         errs1 = [-93, -4520, -4501]
-                        errs2 = [-4512, -4599, -4600]
+                        errs2 = [-95, -4512, -4599, -4600]
                         var msg = signRes.msg
-                        if (arrs1.indexOf(signRes.code) === 0) {
+                        if (errs1.indexOf(signRes.code) === 0) {
                             msg = '证书PIN码输入错误';
-                        }else if (arrs2.indexOf(signRes.code) === 0) {
+                        }else if (errs2.indexOf(signRes.code) === 0) {
                             msg = 'PIN码连续输错10次，UsbKey已被锁定，请联系管理员解锁';
                         }
                         document.getElementById("tip").innerHTML = `<p class="help-block red-fonts">` + msg + `</p>`
                     }else {
-                        debugger
                         $('#ecsburl').val(url);
                         $('#rand').val(response.rand);
                         $('#sign').val(signRes.data);
